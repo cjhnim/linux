@@ -37,9 +37,8 @@
 /* Thanks to NetChip Technologies for donating this product ID.
  * It's for devices with only CDC Ethernet configurations.
  */
-#define CDC_VENDOR_NUM		0x0525	/* NetChip */
-#define CDC_PRODUCT_NUM		0xa4a1	/* Linux-USB Ethernet Gadget */
-
+#define CDC_VENDOR_NUM		0x04e8 //0x0525	/* NetChip */
+#define CDC_PRODUCT_NUM		0x685d //0xa4a1	/* Linux-USB Ethernet Gadget */
 /*-------------------------------------------------------------------------*/
 USB_GADGET_COMPOSITE_OPTIONS();
 

@@ -81,6 +81,8 @@ struct f_ncm {
 	struct hrtimer			task_timer;
 
 	bool				timer_stopping;
+
+	uint16_t	dgramsize;
 };
 
 static inline struct f_ncm *func_to_ncm(struct usb_function *f)
@@ -683,6 +685,14 @@ invalid:
 	return;
 }
 
+static void ncm_setdgram_complete(struct usb_ep *ep, struct usb_request *req)
+{
+	unsigned		dgram_size;
+	struct usb_function	*f = req->context;
+	struct f_ncm		*ncm = func_to_ncm(f);
+	dgram_size = get_unaligned_le16(req->buf);
+	ncm->dgramsize = dgram_size;
+}
 static int ncm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 {
 	struct f_ncm		*ncm = func_to_ncm(f);
@@ -839,6 +849,25 @@ static int ncm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	/* case USB_CDC_SET_NET_ADDRESS: */
 	/* case USB_CDC_GET_MAX_DATAGRAM_SIZE: */
 	/* case USB_CDC_SET_MAX_DATAGRAM_SIZE: */
+	
+	case ((USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8)
+		| USB_CDC_SET_MAX_DATAGRAM_SIZE:
+	{
+		req->complete = ncm_setdgram_complete;
+		req->length = w_length;
+		req->context = f;
+
+		value = req->length;
+		break;
+	}
+
+	case ((USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE) << 8)
+		| USB_CDC_GET_MAX_DATAGRAM_SIZE:
+	{
+		value = 2;
+		put_unaligned_le16(ncm->dgramsize, req->buf);
+		break;
+	}
 
 	default:
 invalid:
